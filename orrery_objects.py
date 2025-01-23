@@ -12,10 +12,12 @@ HC = HEIGHT/2
 
 class SolarObject:
     def __init__(self, anchor=None, orbital_velocity=0, rotational_velocity=0, radius=1, orbit=0, colour=(128, 128, 128),
-        rotation_marker_colour=None):
-        """Orbital and rotational velocities should be in radians per second."""
+        rotation_marker_colour=None, mean_anomaly=0):
+        """Orbital and rotational velocities should be in radians per second.
+        Mean anomaly is a position in radians, from 0, based on a d0 date."""
         self.anchor = anchor
         self.orbital_velocity = orbital_velocity
+        self.mean_anomaly = mean_anomaly
         self.rotational_velocity = rotational_velocity
         self.radius = radius
         self.orbit = orbit
@@ -29,7 +31,7 @@ class SolarObject:
         """Timestamp should be in seconds floating since epoch"""
         cx, cy = self.anchor.position
         if self.orbit > 0:
-            orbital_position = self.orbital_velocity * timestamp
+            orbital_position = self.orbital_velocity * timestamp + self.mean_anomaly
             self.position = (math.cos(orbital_position) * self.orbit + cx,
                              math.sin(orbital_position) * self.orbit + cy)
         else:
@@ -71,21 +73,28 @@ EARTH_YEAR = EARTH_DAY * 1/364.25
 MERCURY_YEAR = EARTH_DAY * 1/87.969
 VENUS_YEAR = EARTH_DAY * 1/224.65
 
+#m0 data from https://aa.quae.nl/en/reken/hemelpositie.html#1
+#1st January 2000
+
+
+
 orrery = Orrery()
 sun_anchor = SolarObject()
 sun_anchor.position = WC, HC
 sun = SolarObject(anchor=sun_anchor, radius=40, colour=(255, 255, 0))
 orrery.add(sun)
 # mercury
-orrery.add(SolarObject(anchor=sun, radius=3, orbit=57, orbital_velocity=EARTH_DAY * 1/87.969))
+orrery.add(SolarObject(anchor=sun, radius=3, orbit=57, orbital_velocity=EARTH_DAY * 1/87.969, mean_anomaly=math.radians(174.795)))
 # venus
-orrery.add(SolarObject(anchor=sun, radius=6, orbit=108, orbital_velocity=EARTH_DAY * 1/224.65, colour=(255, 240, 180)))
+orrery.add(SolarObject(anchor=sun, radius=6, orbit=108, orbital_velocity=EARTH_DAY * 1/224.65, colour=(255, 240, 180),
+    mean_anomaly=math.radians(50.416)))
 earth = SolarObject(anchor=sun, radius=6, orbit=149, orbital_velocity=EARTH_DAY * 1/364.25, rotational_velocity=EARTH_DAY,
-    colour=(0, 128, 196), rotation_marker_colour=(128, 255, 128))
+    colour=(0, 128, 196), rotation_marker_colour=(128, 255, 128), mean_anomaly=math.radians(357.529))
 orrery.add(earth)
 moon = SolarObject(anchor=earth, radius=2, orbit=10, orbital_velocity=EARTH_DAY * 1/27.322, colour=(70, 70, 70))
 orrery.add(moon)
-mars = SolarObject(anchor=sun, radius=4, orbit=227, orbital_velocity=EARTH_DAY * 1/687, colour=(255, 90, 90))
+mars = SolarObject(anchor=sun, radius=4, orbit=227, orbital_velocity=EARTH_DAY * 1/687, colour=(255, 90, 90), mean_anomaly=
+    math.radians(19.373))
 orrery.add(mars)
 phobos = SolarObject(anchor=mars, radius=1, orbit=6, orbital_velocity=EARTH_DAY * 3)
 orrery.add(phobos)
